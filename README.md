@@ -86,10 +86,7 @@ Contributions are welcome! Please open an issue or submit a pull request if youâ
 This project is licensed under the MIT License. See `LICENSE` for details.
 
 ## Roadmap
-- [ ] Improve perceptron training efficiency
-- [ ] Add multi-layer perceptron support
-- [ ] Expand BLAS functionality
-- [ ] Implement neural network structures
+- [] Reference WorkingMemory.md
 
 ---
 

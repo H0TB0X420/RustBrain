@@ -21,6 +21,8 @@ mod tests {
         let v1 = Vector::new(vec![1.0, 2.0, 3.0]);
         let v2 = Vector::new(vec![4.0, 5.0, 6.0]);
         let result = v1.add(&v2);
-        assert_eq!(result.data, vec![5.0, 7.0, 9.0]);
+        assert_eq!(result[0], 5.0);
+        assert_eq!(result[1], 7.0);
+        assert_eq!(result[2], 9.0);
     }
 }

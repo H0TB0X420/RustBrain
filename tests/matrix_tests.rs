@@ -25,7 +25,7 @@ mod tests {
             vec![9.0, 10.0],
             vec![11.0, 12.0]
         ]);
-        let result = a.gemm(&b).unwrap();
+        let result = a.gemm(&b);
 
         assert_eq!(result, Matrix::new(vec![
             vec![58.0, 64.0],
@@ -48,10 +48,11 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "assertion `left == right` failed: Incompatible matrix dimensions for multiplication\n  left: 2\n right: 3")]
     fn test_dimension_mismatch() {
         let a = Matrix::new(vec![vec![1.0, 2.0]]);
         let b = Matrix::new(vec![vec![3.0], vec![4.0], vec![5.0]]);
-        assert!(a.gemm(&b).is_none());
+        a.gemm(&b);
     }
-    }
+}
     

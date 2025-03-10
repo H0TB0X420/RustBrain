@@ -1,5 +1,6 @@
 use rand::Rng; // Import random number generator
-
+use std::ops::IndexMut;
+use std::ops::Index;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector {
@@ -91,5 +92,19 @@ impl Vector {
                                       .map(|(a, b)| a + b)
                                       .collect();
         Self { data }
+    }
+}
+
+impl Index<usize> for Vector {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+
+impl IndexMut<usize> for Vector {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
     }
 }
