@@ -1,0 +1,8 @@
+To-do:
+
+    Matrix + Vector:
+        Overload operations
+        
+    Perceptron:
+        Make test project, import perceptron, train and predict with it
+        
