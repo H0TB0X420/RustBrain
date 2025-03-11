@@ -93,6 +93,21 @@ impl Vector {
                                       .collect();
         Self { data }
     }
+
+    /// Swaps two elements in the vector
+    pub fn swap(&mut self, i: usize, j: usize) {
+        assert!(i < self.data.len() && j < self.data.len(), "Index out of bounds");
+        self.data.swap(i, j);
+    }
+    
+    pub fn iter(&self) -> std::slice::Iter<f64> {
+        self.data.iter()
+    }
+
+    /// Returns an iterator over mutable references to the elements
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<f64> {
+        self.data.iter_mut()
+    }
 }
 
 impl Index<usize> for Vector {
@@ -108,3 +123,32 @@ impl IndexMut<usize> for Vector {
         &mut self.data[index]
     }
 }
+
+impl<'a> IntoIterator for &'a Vector {
+    type Item = &'a f64;
+    type IntoIter = std::slice::Iter<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
+}
+
+impl IntoIterator for Vector {
+    type Item = f64;
+    type IntoIter = std::vec::IntoIter<f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Vector {
+    type Item = &'a mut f64;
+    type IntoIter = std::slice::IterMut<'a, f64>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter_mut()
+    }
+}
+
+

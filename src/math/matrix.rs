@@ -1,6 +1,7 @@
 use super::Vector;
 use std::ops::Index;
 use std::ops::IndexMut;
+use std::fmt;
 #[derive(Debug, Clone, PartialEq)]
 
 
@@ -169,27 +170,123 @@ impl Matrix {
 
      /// Swaps two rows in the matrix
      fn swap_rows(&mut self, row1: usize, row2: usize) {
+        assert!(row1 < self.row_count() && row2 < self.row_count(), "Row indices out of bounds");
         self.rows.swap(row1, row2);
     }
 
-    /// Returns the minor matrix obtained by removing row `row` and column `col`
-    fn minor(&self, row: usize, col: usize) -> Matrix {
-        let mut minor_data = Vec::with_capacity(self.row_count() - 1);
-        
-        for i in 0..self.row_count() {
-            if i == row { continue; } // Skip the row
+    pub fn scale_row(&mut self, row: usize, factor: f64) {
+        assert!(row < self.row_count(), "Row index out of bounds");
+        for val in &mut self.rows[row] {
+            *val *= factor;
+        }
+    }
 
-            let mut new_row = Vec::with_capacity(self.cols - 1);
-            for j in 0..self.cols {
-                if j == col { continue; } // Skip the column
-                new_row.push(self[(i, j)]);
-            }
-            minor_data.push(Vector::new(new_row));
+    pub fn add_rows(&mut self, target: usize, source: usize, factor: f64) {
+        assert!(target < self.row_count() && source < self.row_count(), "Row indices out of bounds");
+
+        // Split the matrix data into mutable slices to handle target and source row
+        let (first, second) = self.rows.split_at_mut(std::cmp::max(target, source));
+                
+        // We handle both rows separately based on the row indices
+        let target_row = &mut first[target];
+        let source_row = &second[0];  // Only the first slice will contain the source row
+
+        for (t, s) in target_row.iter_mut().zip(source_row.iter()) {
+            *t += factor * s;
+        }
+    }
+
+    pub fn swap_columns(&mut self, c1: usize, c2: usize) {
+        assert!(c1 < self.cols && c2 < self.cols, "Column indices out of bounds");
+        for row in &mut self.rows {
+            row.swap(c1, c2);
+        }
+    }
+
+    /// Multiplies an entire column by a scalar
+    pub fn scale_column(&mut self, col: usize, factor: f64) {
+        assert!(col < self.cols, "Column index out of bounds");
+        for row in &mut self.rows {
+            row[col] *= factor;
+        }
+    }
+
+    /// Computes the inverse of the matrix using LU decomposition.
+    pub fn inverse(&self) -> Option<Matrix> {
+        let n = self.row_count();
+        assert!(self.row_count() == self.cols, "Matrix must be square to compute inverse.");
+
+        let (lu, parity) = self.lu_decomposition();
+        if parity == 0 {
+            return None; // Singular matrix (no inverse)
         }
 
-        Matrix::from_vector(minor_data)
+        // Identity matrix as right-hand side
+        let mut identity = Matrix::identity(n);
+        let mut inverse = Matrix::zeros(n, n);
+
+        // Solve LU * X = I for each column of the identity matrix
+        for col in 0..n {
+            let mut b = identity.get_column(col);
+            let y = lu.forward_substitution(&b);
+            let x = lu.backward_substitution(&y);
+            inverse.set_column(col, &x);
+        }
+
+        Some(inverse)
+    }
+
+    /// Performs forward substitution to solve L * y = b
+    fn forward_substitution(&self, b: &Vector) -> Vector {
+        let n = self.row_count();
+        let mut y = vec![0.0; n];
+
+        for i in 0..n {
+            let mut sum = b[i];
+            for j in 0..i {
+                sum -= self[(i, j)] * y[j];
+            }
+            y[i] = sum; // Since L has ones on the diagonal
+        }
+
+        Vector::new(y)
+    }
+
+    /// Performs backward substitution to solve U * x = y
+    fn backward_substitution(&self, y: &Vector) -> Vector {
+        let n = self.row_count();
+        let mut x = vec![0.0; n];
+
+        for i in (0..n).rev() {
+            let mut sum = y[i];
+            for j in i + 1..n {
+                sum -= self[(i, j)] * x[j];
+            }
+            x[i] = sum / self[(i, i)]; // Divide by diagonal element
+        }
+
+        Vector::new(x)
+    }
+
+    /// Returns a column of the matrix as a Vector
+    fn get_column(&self, col: usize) -> Vector {
+        Vector::new((0..self.row_count()).map(|i| self[(i, col)]).collect())
+    }
+
+    /// Sets a column in the matrix from a Vector
+    fn set_column(&mut self, col: usize, v: &Vector) {
+        for i in 0..self.row_count() {
+            self[(i, col)] = v[i];
+        }
     }
   
+    /// Adds `factor * source_col` to `target_col`
+    pub fn add_columns(&mut self, target: usize, source: usize, factor: f64) {
+        assert!(target < self.cols && source < self.cols, "Column indices out of bounds");
+        for row in &mut self.rows {
+            row[target] += factor * row[source];
+            }
+    }
 }
 
 
@@ -220,5 +317,15 @@ impl IndexMut<(usize, usize)> for Matrix {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         let (row, col) = index;
         &mut self.rows[row][col]
+    }
+}
+
+impl fmt::Display for Matrix {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for row in &self.rows {
+            let formatted_row: Vec<String> = row.iter().map(|v| format!("{:8.3}", v)).collect();
+            writeln!(f, "[{}]", formatted_row.join(" "))?;
+        }
+        Ok(())
     }
 }

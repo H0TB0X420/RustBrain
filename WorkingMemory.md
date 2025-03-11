@@ -5,10 +5,9 @@
 - ✅ **Current:** Basic `Vector` and `Matrix` classes implemented with tests.  
 - 🔲 **Next Steps:**  
   - Optimize matrix operations (**dot product, transpose, determinant, inverse, row/column operations**). 
-  - Test all Vector operations
-  - Test all optimized Matrix operations 
   - Implement **broadcasting** for element-wise operations.  
   - Implement **efficient memory management** (e.g., avoiding unnecessary copies).  
+- 🔲 Update Test cases
 - 🔲 Update README
 
 ### **2. Enhance the Perceptron**
@@ -16,6 +15,7 @@
 - 🔲 **Next Steps:**  
   - Modify perceptron to accept **batch updates** for training efficiency.  
   - Generalize perceptron to support **multi-class classification** (One-vs-All or Softmax).  
+- 🔲 Update Test cases
 - 🔲 Update README
 
 ---

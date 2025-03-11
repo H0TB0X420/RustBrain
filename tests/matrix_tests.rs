@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use rustbrain::math::Matrix;
     use rustbrain::math::Vector;
     #[test]
@@ -53,6 +55,23 @@ mod tests {
         let a = Matrix::new(vec![vec![1.0, 2.0]]);
         let b = Matrix::new(vec![vec![3.0], vec![4.0], vec![5.0]]);
         a.gemm(&b);
+    }
+
+    #[test]
+    fn inverse_matrix(){
+        let a = Matrix::new(vec![vec![1.0, 2.0, 3.0, 4.0],
+                                                vec![0.0, 1.0, 2.0, 3.0], 
+                                                vec![0.0,0.0, 1.0, 2.0],
+                                                vec![0.0, 0.0, 0.0, 1.0]]);
+        let b = a.inverse().unwrap();
+        println!("{}", a);
+        println!("{}", b);
+        let i = a.gemm(&b);
+        let j = b.gemm(&a);
+        println!("{}", i);
+        println!("{}", j);
+        assert_eq!(i, Matrix::identity(4));
+        assert_eq!(j, Matrix::identity(4));
     }
 }
     
