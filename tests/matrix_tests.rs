@@ -73,5 +73,80 @@ mod tests {
         assert_eq!(i, Matrix::identity(4));
         assert_eq!(j, Matrix::identity(4));
     }
+
+    #[test]
+    fn test_gaussian_elimination() {
+        let mut matrix = Matrix::new(vec![
+            vec![2.0, 3.0, -1.0, 1.0],
+            vec![4.0, 7.0, -3.0, 2.0],
+            vec![6.0, 18.0, -5.0, 3.0],
+        ]);
+        println!("Test 1:");
+        let solution = matrix.gaussian_elimination().expect("Gaussian elimination failed");
+        for s in solution.iter(){
+            println!("{}", s);
+        }
+        let expected_solution = vec![0.5, 0.0, 0.0];
+
+        for (sol, expected) in solution.iter().zip(expected_solution.iter()) {
+            assert!((sol - expected).abs() < 1e-6, "Solution is incorrect!");
+        }
+
+        println!("Test 2:");
+        let mut matrix = Matrix::new(vec![
+            vec![1.0, 9.0, -5.0, -32.0],
+            vec![-3.0, -5.0, -5.0, -10.0],
+            vec![-2.0, -7.0, 1.0, 13.0],
+        ]);
+
+        let solution = matrix.gaussian_elimination().expect("Gaussian elimination failed");
+        for s in solution.iter(){
+            println!("{}", s);
+        }
+        let expected_solution = vec![5.0, -3.0, 2.0];
+
+        for (sol, expected) in solution.iter().zip(expected_solution.iter()) {
+            assert!((sol - expected).abs() < 1e-6, "Solution is incorrect!");
+        }
+    }
+
+    #[test]
+    fn test_gram_schmidt() {
+        // Define a 3x3 matrix A.
+        let a = Matrix::new(vec![
+            vec![1.0, 1.0, 0.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+        ]);
+        
+        // Perform the Gram-Schmidt process to get Q and R such that A = Q * R.
+        let (q, r) = a.gram_schmidt();
+        
+        // Check that each column of Q is normalized (has unit length).
+        for j in 0..q.cols {
+            let col = q.get_column(j);
+            let norm = col.norm();
+            assert!((norm - 1.0).abs() < 1e-6, "Column {} of Q is not normalized (norm = {})", j, norm);
+        }
+        
+        // Check orthogonality between different columns of Q.
+        for j in 0..q.cols {
+            for k in (j + 1)..q.cols {
+                let col_j = q.get_column(j);
+                let col_k = q.get_column(k);
+                let dot = col_j.dot(&col_k);
+                assert!(dot.abs() < 1e-6, "Columns {} and {} of Q are not orthogonal (dot = {})", j, k, dot);
+            }
+        }
+        
+        // Check that Q * R reconstructs the original matrix A.
+        let qr = q.gemm(&r);
+        for i in 0..a.row_count() {
+            for j in 0..a.cols {
+                let diff = (a[(i, j)] - qr[(i, j)]).abs();
+                assert!(diff < 1e-6, "Mismatch at ({}, {}): A = {}, Q*R = {}", i, j, a[(i, j)], qr[(i, j)]);
+            }
+        }
+    }
 }
     

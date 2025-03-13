@@ -222,12 +222,12 @@ impl Matrix {
         }
 
         // Identity matrix as right-hand side
-        let mut identity = Matrix::identity(n);
+        let identity = Matrix::identity(n);
         let mut inverse = Matrix::zeros(n, n);
 
         // Solve LU * X = I for each column of the identity matrix
         for col in 0..n {
-            let mut b = identity.get_column(col);
+            let b = identity.get_column(col);
             let y = lu.forward_substitution(&b);
             let x = lu.backward_substitution(&y);
             inverse.set_column(col, &x);
@@ -269,7 +269,7 @@ impl Matrix {
     }
 
     /// Returns a column of the matrix as a Vector
-    fn get_column(&self, col: usize) -> Vector {
+    pub fn get_column(&self, col: usize) -> Vector {
         Vector::new((0..self.row_count()).map(|i| self[(i, col)]).collect())
     }
 
@@ -286,6 +286,102 @@ impl Matrix {
         for row in &mut self.rows {
             row[target] += factor * row[source];
             }
+    }
+
+    /// Solves the system of equations represented by the augmented matrix
+    /// using Gaussian elimination with partial pivoting.
+    /// The matrix must be of size n x (n+1).
+    pub fn gaussian_elimination(&mut self) -> Result<Vec<f64>, &'static str> {
+        let n = self.row_count();
+        // Check if the matrix is augmented: columns == rows + 1
+        if self.cols != n + 1 {
+            return Err("Matrix is not augmented with the correct number of columns");
+        }
+        
+        // Forward Elimination
+        for i in 0..n {
+            // Find the pivot row for column i
+            let mut max_row = i;
+            for k in (i+1)..n {
+                if self[(k, i)].abs() > self[(max_row, i)].abs() {
+                    max_row = k;
+                }
+            }
+            // Check for singular matrix
+            if self[(max_row, i)].abs() < 1e-10 {
+                return Err("Singular matrix; no unique solution exists");
+            }
+            // Swap the pivot row with the current row, if needed
+            if max_row != i {
+                self.swap_rows(i, max_row);
+            }
+            
+            // Eliminate entries below the pivot
+            for j in (i+1)..n {
+                let factor = self[(j, i)] / self[(i, i)];
+                for k in i..self.cols {
+                    self[(j, k)] -= factor * self[(i, k)];
+                }
+            }
+        }
+        
+        // Back Substitution
+        let mut x = vec![0.0; n];
+        for i in (0..n).rev() {
+            let mut sum = 0.0;
+            for j in (i+1)..n {
+                sum += self[(i, j)] * x[j];
+            }
+            x[i] = (self[(i, self.cols - 1)] - sum) / self[(i, i)];
+        }
+        Ok(x)
+    }
+
+ /// Implements the Gram–Schmidt process to perform QR decomposition.
+    /// Returns (Q, R) such that A = Q * R.
+    pub fn gram_schmidt(&self) -> (Matrix, Matrix) {
+        let m = self.row_count();
+        let n = self.cols;
+        // Q will be built column by column.
+        let mut q_columns: Vec<Vector> = Vec::with_capacity(n);
+        // R is an n x n upper triangular matrix.
+        let mut r_data: Vec<Vec<f64>> = vec![vec![0.0; n]; n];
+
+        for j in 0..n {
+            // Extract j-th column of A.
+            let a_j = self.get_column(j);
+            let mut v = a_j.clone();
+            // For each previous q column, subtract its component.
+            for i in 0..j {
+                let q_i = &q_columns[i];
+                let r_ij = q_i.dot(&a_j);
+                r_data[i][j] = r_ij;
+                // v = v - r_ij * q_i; using scale and add (with negative scaling)
+                v = v.add(&q_i.scale(-r_ij));
+            }
+            // The norm of v is r_jj.
+            let r_jj = v.norm();
+            r_data[j][j] = r_jj;
+            // If r_jj is near zero, the column is linearly dependent.
+            let q_j = if r_jj.abs() < 1e-10 {
+                Vector::zeros(v.data.len())
+            } else {
+                v.scale(1.0 / r_jj)
+            };
+            q_columns.push(q_j);
+        }
+        // Form Q matrix from the q_columns.
+        // Q is m x n. Each row i of Q is composed of the i-th element of each q_j.
+        let mut q_data: Vec<Vec<f64>> = vec![vec![0.0; n]; m];
+        for j in 0..n {
+            let qj = &q_columns[j];
+            for i in 0..m {
+                q_data[i][j] = qj[i];
+            }
+        }
+        let q = Matrix::new(q_data);
+        let r = Matrix::new(r_data);
+        (q, r)
     }
 }
 
