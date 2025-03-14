@@ -3,7 +3,7 @@
 ## **Phase 1: Strengthening the Foundations**  
 ### **1. Improve Vector and Matrix Operations**
 - ✅ **Current:** Basic `Vector` and `Matrix` classes implemented with tests.  
-- 🔲 **Next Steps:**  
+- ✅ **Next Steps:**  
   - Optimize matrix operations (**dot product, transpose, determinant, inverse, row/column operations**). 
   - Implement **broadcasting** for element-wise operations.  
   - Implement **efficient memory management** (e.g., avoiding unnecessary copies).  
