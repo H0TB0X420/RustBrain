@@ -1,6 +1,7 @@
 pub mod math;
 pub mod perceptron;
-// pub mod utils;
+mod utils;
+pub mod neuralnetwork;
 
 // Re-export key components for easier access
 pub use math::{Vector, Matrix};
