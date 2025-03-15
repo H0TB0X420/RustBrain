@@ -3,14 +3,14 @@ mod tests {
     use rustbrain::perceptron::Perceptron;
     use rustbrain::math::Vector;
     #[test]
-    #[ignore]
+    // #[ignore]
     fn test_perceptron_initialization() {
         let p = Perceptron::new(3);
-        assert_eq!(p.weights().len(), 3);
+        assert_eq!(p.weights().len(), 4); // and should account for bias
     }
 
     #[test]
-    #[ignore]
+    // #[ignore]
     fn test_perceptron_prediction() {
         let p = Perceptron::new(3);
         let input = Vector::new(vec![1.0, -2.0, 0.5]);
@@ -19,7 +19,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    // #[ignore]
     fn test_perceptron_training() {
         let mut p = Perceptron::new(3);
         let inputs = vec![Vector::new(vec![1.0, 1.0, 1.0]), Vector::new(vec![0.0, 0.0, 0.0])];
