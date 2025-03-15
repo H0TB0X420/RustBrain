@@ -7,14 +7,14 @@
   - Optimize matrix operations (**dot product, transpose, determinant, inverse, row/column operations**). 
   - Implement **broadcasting** for element-wise operations.  
   - Implement **efficient memory management** (e.g., avoiding unnecessary copies).  
-- 🔲 Update Test cases
-- 🔲 Update README
+
 
 ### **2. Enhance the Perceptron**
 - ✅ **Current:** Basic perceptron implemented with tests.  
-- 🔲 **Next Steps:**  
+- ✅ **Next Steps:**  
   - Modify perceptron to accept **batch updates** for training efficiency.  
   - Generalize perceptron to support **multi-class classification** (One-vs-All or Softmax).  
+### **3. Housekeeping for Phase 1**
 - 🔲 Update Test cases
 - 🔲 Update README
 
