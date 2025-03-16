@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use rustbrain::math::Vector;
-    use rustbrain::multiclassperceptron::MultiClassPerceptron;    
+    use rustbrain::perceptron::MultiClassPerceptron;    
         
         #[test]
         fn test_multiclass_perceptron_training() {

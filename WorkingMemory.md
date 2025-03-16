@@ -16,7 +16,7 @@
   - Generalize perceptron to support **multi-class classification** (One-vs-All or Softmax).  
 ### **3. Housekeeping for Phase 1**
 - 🔲 Update Test cases
-- 🔲 Update README
+- ✅ Update README
 
 ---
 
