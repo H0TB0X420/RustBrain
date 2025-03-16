@@ -11,7 +11,7 @@ mod tests {
             vec![4.0, 5.0, 6.0]
         ]);
         let x = Vector::new(vec![1.0, 1.0, 1.0]);
-        let result = a.gemv(&x).unwrap();
+        let result = a.gemv(&x);
 
         assert_eq!(result, Vector::new(vec![6.0, 15.0]));
     }

@@ -2,6 +2,8 @@ use super::Vector;
 use std::ops::Index;
 use std::ops::IndexMut;
 use std::fmt;
+use rand::Rng;
+
 #[derive(Debug, Clone, PartialEq)]
 
 
@@ -80,15 +82,14 @@ impl Matrix {
     }
 
     // Matrix-vector multiplication: y = Ax + y
-    pub fn gemv(&self, x: &Vector) -> Option<Vector> {
-        if self.col_count() != x.len() {
-            return None; // Dimension mismatch
-        }
+    pub fn gemv(&self, x: &Vector) -> Vector {
+        assert_eq!(self.col_count(), x.len(), "Incompatible matrix dimensions for multiplication");
+
         let mut result = Vector::zeros(self.row_count());
         for (row, res) in self.rows.iter().zip(result.data.iter_mut()) {
             *res = row.dot(x);
         }
-        Some(result)
+        result
     }
 
     // General matrix-matrix multiplication: C = AB
@@ -286,6 +287,22 @@ impl Matrix {
         for row in &mut self.rows {
             row[target] += factor * row[source];
             }
+    }
+
+    pub fn random(rows: usize, cols: usize) -> Self {
+        let mut rng = rand::rng();
+        let data: Vec<Vec<f64>> = (0..rows)
+            .map(|_| (0..cols).map(|_| rng.random_range(-1.0..1.0)).collect())
+            .collect();
+        Self::new(data)
+    }
+
+    pub fn scale(&mut self, factor: f64) {
+        for row in &mut self.rows {
+            for val in &mut row.data {
+                *val *= factor;
+            }
+        }
     }
 
     /// Solves the system of equations represented by the augmented matrix
