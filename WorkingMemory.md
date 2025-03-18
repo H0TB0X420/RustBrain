@@ -22,10 +22,13 @@
 
 ## **Phase 2: Expanding Classic Machine Learning Models**
 ### **3. Implementing Linear Regression**
+- 🔲 Fix close form linear regression tests to have invertable matrices
 - 🔲 Implement **Ordinary Least Squares (OLS)** regression.  
 - 🔲 Implement **Gradient Descent-based Linear Regression** for large datasets.  
 - 🔲 Update README
-
+- 🔲 Clean up Matrix class, split into multiple files
+- 🔲 Clean up Matrix tests, split into multiple files
+--------------------------------------------------------------------------
 ### **4. Implementing Logistic Regression**
 - 🔲 Implement **Logistic Regression for binary classification**.  
 - 🔲 Extend to **multi-class classification using Softmax Regression**.  

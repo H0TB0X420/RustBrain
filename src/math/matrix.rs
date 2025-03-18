@@ -54,9 +54,10 @@ impl Matrix {
 
     pub fn transpose(&self) -> Self {
         let mut transposed = Matrix::zeros(self.cols, self.row_count());
-        for i in 0..self.row_count() {
-            for j in 0..self.col_count() {
-                transposed[j][i] = self.rows[i][j];
+    
+        for (i, row) in self.rows.iter().enumerate() {
+            for (j, &value) in row.data.iter().enumerate() {
+                transposed.rows[j].data[i] = value;
             }
         }
         transposed
@@ -132,7 +133,7 @@ impl Matrix {
     }
     /// Performs LU decomposition using Doolittle’s method
     /// Returns (LU matrix, parity of row swaps)
-    fn lu_decomposition(&self) -> (Matrix, i32) {
+    pub fn lu_decomposition(&self) -> (Matrix, i32) {
         let n = self.row_count();
         let mut lu = self.clone();
         let mut parity = 1; // Tracks row swaps (affects determinant sign)
@@ -167,6 +168,23 @@ impl Matrix {
         }
 
         (lu, parity)
+    }
+
+    pub fn split_lu(&self) -> (Matrix, Matrix) {
+        let n = self.row_count();
+        let mut l = Matrix::identity(n);
+        let mut u = Matrix::zeros(n, n);
+        
+        for i in 0..n {
+            for j in 0..n {
+                if i > j {
+                    l[(i, j)] = self[(i, j)];
+                } else {
+                    u[(i, j)] = self[(i, j)];
+                }
+            }
+        }
+        (l, u)
     }
 
      /// Swaps two rows in the matrix
@@ -213,13 +231,13 @@ impl Matrix {
     }
 
     /// Computes the inverse of the matrix using LU decomposition.
-    pub fn inverse(&self) -> Option<Matrix> {
+    pub fn inverse(&self) -> Matrix {
         let n = self.row_count();
         assert!(self.row_count() == self.cols, "Matrix must be square to compute inverse.");
 
         let (lu, parity) = self.lu_decomposition();
         if parity == 0 {
-            return None; // Singular matrix (no inverse)
+            panic!("{} \nMatrix is singular and cannot be inverted.", self); // Singular matrix (no inverse)
         }
 
         // Identity matrix as right-hand side
@@ -234,7 +252,21 @@ impl Matrix {
             inverse.set_column(col, &x);
         }
 
-        Some(inverse)
+    
+        // A * A^-1 = I
+        if self.gemm(&inverse) == Matrix::identity(self.cols) {
+            inverse
+        } else if  self.gemm(&inverse.reverse_rows()) == Matrix::identity(self.cols){
+            inverse.reverse_rows()
+        }else {
+            panic!("Input: {} \n Inverse: {} \n Reverse: {} \nMatrix inversion failed! Check for singularity.", self, inverse, inverse.reverse_rows());
+        }
+    }
+
+    /// Reverses the order of rows in the matrix.
+    pub fn reverse_rows(&self) -> Matrix {
+        let reversed_rows: Vec<Vector> = self.rows.iter().rev().cloned().collect();
+        Matrix::from_vector(reversed_rows)
     }
 
     /// Performs forward substitution to solve L * y = b
@@ -276,6 +308,8 @@ impl Matrix {
 
     /// Sets a column in the matrix from a Vector
     fn set_column(&mut self, col: usize, v: &Vector) {
+        assert_eq!(self.row_count(), v.len(), "Vector length must match matrix row count.");
+    
         for i in 0..self.row_count() {
             self[(i, col)] = v[i];
         }
