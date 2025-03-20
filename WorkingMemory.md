@@ -22,9 +22,7 @@
 
 ## **Phase 2: Expanding Classic Machine Learning Models**
 ### **3. Implementing Linear Regression**
-- 🔲 Determine inverse bug, numbers in matrix are correct but the order is not.
-- 🔲 Fix close form linear regression tests to have invertable matrices
-- 🔲 Implement **Ordinary Least Squares (OLS)** regression.  
+- ✅ Implement **Ordinary Least Squares (OLS) Closed-Form Solution** regression.  
 - 🔲 Implement **Gradient Descent-based Linear Regression** for large datasets.  
 - 🔲 Update README
 - 🔲 Clean up Matrix class, split into multiple files

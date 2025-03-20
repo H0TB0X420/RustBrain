@@ -88,7 +88,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Matrix is singular and cannot be inverted.")]
+    #[should_panic(expected = "Matrix inversion failed! Check for singularity.")]
     fn test_fit_singular_matrix() {
         let mut model = LinearRegression::new();
         
