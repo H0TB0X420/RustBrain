@@ -21,15 +21,13 @@ impl LinearRegression {
 
         // Compute (X^T X)
         let xt_x = x_matrix.transpose().gemm(&x_matrix);
-
         // Compute (X^T y)
         let xt_y = x_matrix.transpose().gemv(&y_vector);
 
         // Solve for weights using the inverse: (X^T X)^(-1) (X^T y)
         let inv_xt_x = xt_x.inverse(); 
-        println!("{inv_xt_x}");
+        
         self.weights = inv_xt_x.gemv(&xt_y);
-       
     }
 
     /// Predict outputs for given inputs.
