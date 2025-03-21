@@ -1,5 +1,5 @@
 use crate::math::{Matrix, Vector};
-
+use rand::prelude::SliceRandom;
 pub struct LinearRegression {
     pub weights: Vector, // Model parameters (including bias)
 }
@@ -41,5 +41,31 @@ impl LinearRegression {
         let mut extended = vec![1.0]; // Bias term
         extended.extend_from_slice(&input.data);
         Vector::new(extended)
+    }
+
+
+    /// Trains the model using Stochastic Gradient Descent (SGD)
+    pub fn fit_sgd(&mut self, inputs: &Vec<Vector>, targets: &Vector, learning_rate: f64, epochs: usize) {
+        assert!(inputs.len() == targets.len(), "Mismatched input and target sizes!");
+        let mut rng = rand::rng();
+        let n = inputs.len();
+        
+        // Initialize weights with zeros (including bias)
+        self.weights = Vector::new(vec![0.0; inputs[0].len() + 1]);
+
+        for _ in 0..epochs {
+            let mut indices: Vec<usize> = (0..n).collect();
+            indices.shuffle(&mut rng); // Randomize sample order
+            
+            for &i in indices.iter() {
+                let mut x = inputs[i].clone();
+                x.data.insert(0, 1.0); // Add bias term
+                let prediction = self.weights.dot(&x);
+                let error = targets[i] - prediction;
+                let gradient = x.scale(error * learning_rate);
+                self.weights = self.weights.add(&gradient);
+            }
+        }
+        
     }
 }
