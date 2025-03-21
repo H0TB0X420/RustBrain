@@ -15,7 +15,7 @@
   - Modify perceptron to accept **batch updates** for training efficiency.  
   - Generalize perceptron to support **multi-class classification** (One-vs-All or Softmax).  
 ### **3. Housekeeping for Phase 1**
-- 🔲 Update Test cases
+- ✅ Update Test cases
 - ✅ Update README
 
 ---
@@ -23,11 +23,9 @@
 ## **Phase 2: Expanding Classic Machine Learning Models**
 ### **3. Implementing Linear Regression**
 - ✅ Implement **Ordinary Least Squares (OLS) Closed-Form Solution** regression.  
-- 🔲 Implement **Gradient Descent-based Linear Regression** for large datasets.  
-- 🔲 Update README
-- 🔲 Clean up Matrix class, split into multiple files
-- 🔲 Clean up Matrix tests, split into multiple files
---------------------------------------------------------------------------
+- ✅ Implement **Gradient Descent-based Linear Regression** for large datasets.  
+- ✅ Update README
+---
 ### **4. Implementing Logistic Regression**
 - 🔲 Implement **Logistic Regression for binary classification**.  
 - 🔲 Extend to **multi-class classification using Softmax Regression**.  
