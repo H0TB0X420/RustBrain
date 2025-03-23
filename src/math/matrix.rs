@@ -266,36 +266,36 @@ impl Matrix {
     }
 
     /// Performs forward substitution to solve L * y = b
-    fn forward_substitution(&self, b: &Vector) -> Vector {
-        let n = self.row_count();
-        let mut y = vec![0.0; n];
+    // fn forward_substitution(&self, b: &Vector) -> Vector {
+        // let n = self.row_count();
+        // let mut y = vec![0.0; n];
 
-        for i in 0..n {
-            let mut sum = b[i];
-            for j in 0..i {
-                sum -= self[(i, j)] * y[j];
-            }
-            y[i] = sum; // Since L has ones on the diagonal
-        }
+        // for i in 0..n {
+        //     let mut sum = b[i];
+        //     for j in 0..i {
+        //         sum -= self[(i, j)] * y[j];
+        //     }
+        //     y[i] = sum; // Since L has ones on the diagonal
+        // }
 
-        Vector::new(y)
-    }
+    //     Vector::new(y)
+    // }
 
     /// Performs backward substitution to solve U * x = y
-    fn backward_substitution(&self, y: &Vector) -> Vector {
-        let n = self.row_count();
-        let mut x = vec![0.0; n];
+    // fn backward_substitution(&self, y: &Vector) -> Vector {
+    //     let n = self.row_count();
+    //     let mut x = vec![0.0; n];
 
-        for i in (0..n).rev() {
-            let mut sum = y[i];
-            for j in i + 1..n {
-                sum -= self[(i, j)] * x[j];
-            }
-            x[i] = sum / self[(i, i)]; // Divide by diagonal element
-        }
+    //     for i in (0..n).rev() {
+    //         let mut sum = y[i];
+    //         for j in i + 1..n {
+    //             sum -= self[(i, j)] * x[j];
+    //         }
+    //         x[i] = sum / self[(i, i)]; // Divide by diagonal element
+    //     }
 
-        Vector::new(x)
-    }
+    //     Vector::new(x)
+    // }
 
     /// Returns a column of the matrix as a Vector
     pub fn get_column(&self, col: usize) -> Vector {
@@ -303,13 +303,13 @@ impl Matrix {
     }
 
     /// Sets a column in the matrix from a Vector
-    fn set_column(&mut self, col: usize, v: &Vector) {
-        assert_eq!(self.row_count(), v.len(), "Vector length must match matrix row count.");
+    // fn set_column(&mut self, col: usize, v: &Vector) {
+    //     assert_eq!(self.row_count(), v.len(), "Vector length must match matrix row count.");
     
-        for i in 0..self.row_count() {
-            self[(i, col)] = v[i];
-        }
-    }
+    //     for i in 0..self.row_count() {
+    //         self[(i, col)] = v[i];
+    //     }
+    // }
   
     /// Adds `factor * source_col` to `target_col`
     pub fn add_columns(&mut self, target: usize, source: usize, factor: f64) {
