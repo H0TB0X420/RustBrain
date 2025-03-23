@@ -1,6 +1,7 @@
 use rand::Rng; // Import random number generator
 use std::ops::IndexMut;
 use std::ops::Index;
+use super::Matrix;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector {
@@ -92,6 +93,21 @@ impl Vector {
                                       .map(|(a, b)| a + b)
                                       .collect();
         Self { data }
+    }
+
+    /// Computes the outer product of two vectors, returning a matrix.
+    pub fn outer_product(&self, other: &Vector) -> Matrix {
+        let rows = self.len();
+        let cols = other.len();
+        let mut result = Matrix::zeros(rows, cols);
+        
+        for i in 0..rows {
+            for j in 0..cols {
+                result[(i, j)] = self[i] * other[j];
+            }
+        }
+        
+        result
     }
 
     /// Swaps two elements in the vector
