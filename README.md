@@ -1,13 +1,16 @@
 # RustBrain
 
-RustBrain is a machine learning library built from scratch in Rust, starting with a perceptron implementation and expanding to support multi-class classification and neural networks. It features efficient mathematical operations using a custom-built `Vector` and `Matrix` class with Basic Linear Algebra Subprograms (BLAS) support.
+RustBrain is a machine learning library built from scratch in Rust, starting with a perceptron implementation and expanding to support multi-class classification, neural networks, and regression models. It features efficient mathematical operations using a custom-built `Vector` and `Matrix` class with Basic Linear Algebra Subprograms (BLAS) support.
 
 ## Features
 - **Custom Vector & Matrix Implementations**: Built for efficiency and no external dependencies.
 - **Perceptron Model**: Supports binary classification with batch learning.
 - **Multi-Class Perceptron**: Implements one-vs-all classification for handling multiple classes.
-- **Softmax Classification**: (Upcoming) Uses softmax for probability-based classification.
+- **Multi-Layer Perceptron (MLP)**: Supports deep learning architectures.
+- **Softmax Classification**: Implements probability-based classification using softmax and cross-entropy loss.
+- **Linear Regression**: Includes both closed-form (Normal Equation) and Stochastic Gradient Descent (SGD) methods.
 - **BLAS Operations**: Includes optimized linear algebra functions, QR decomposition, and matrix operations.
+- **Comprehensive Testing**: Unit tests for all major components.
 - **Modular Design**: Well-structured for future expansions.
 
 ## Installation
@@ -45,77 +48,59 @@ fn main() {
 }
 ```
 
-### Working with Vectors
+### Softmax Classification
 ```rust
-use rustbrain::math::Vector;
+use rustbrain::classification::SoftmaxClassifier;
 
 fn main() {
-    let v1 = Vector::new(vec![1.0, 2.0, 3.0]);
-    let v2 = Vector::new(vec![4.0, 5.0, 6.0]);
-    let dot_product = v1.dot(&v2);
-    println!("Dot Product: {}", dot_product);
+    let mut classifier = SoftmaxClassifier::new(3, 3); // 3 input features, 3 classes
+    let inputs = vec![Vector::new(vec![1.0, 0.0, 2.0]), Vector::new(vec![0.0, 1.0, -1.0])];
+    let targets = vec![0, 1];
+    classifier.train(&inputs, &targets, 0.1, 1000);
+    let prediction = classifier.predict(&inputs[0]);
+    println!("Predicted class: {}", prediction);
 }
 ```
 
-### Working with Matrices
+### Linear Regression (Closed-Form Solution)
 ```rust
-use rustbrain::math::Matrix;
+use rustbrain::regression::LinearRegression;
 
 fn main() {
-    let m1 = Matrix::new(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-    let m2 = Matrix::new(vec![vec![5.0, 6.0], vec![7.0, 8.0]]);
-    let result = m1.multiply(&m2);
-    println!("Matrix Product: {:?}", result);
+    let inputs = vec![Vector::new(vec![1.0, 2.0]), Vector::new(vec![3.0, 4.0])];
+    let targets = Vector::new(vec![5.0, 10.0]);
+    
+    let mut model = LinearRegression::new();
+    model.fit(&inputs, &targets);
+    
+    let prediction = model.predict(&Vector::new(vec![2.0, 3.0]));
+    println!("Prediction: {}", prediction);
 }
 ```
 
-## Project Structure
+### Linear Regression (Stochastic Gradient Descent)
+```rust
+use rustbrain::regression::LinearRegression;
+
+fn main() {
+    let inputs = vec![Vector::new(vec![1.0, 2.0]), Vector::new(vec![3.0, 4.0])];
+    let targets = Vector::new(vec![5.0, 10.0]);
+    
+    let mut model = LinearRegression::new();
+    model.fit_sgd(&inputs, &targets, 0.01, 1000);
+    
+    let prediction = model.predict(&Vector::new(vec![2.0, 3.0]));
+    println!("Prediction: {}", prediction);
+}
 ```
-rustbrain
-│── Cargo.toml
-│── Cargo.lock
-│── .gitignore
-│
-├── src
-│   ├── lib.rs
-│   ├── main.rs (if needed)
-│   ├── math
-│   │   ├── mod.rs
-│   │   ├── vector.rs
-│   │   ├── matrix.rs
-│   ├── neuralnetwork
-│   │   ├── mod.rs
-│   │   ├── neuralnetwork.rs
-│   ├── perceptron
-│   │   ├── mod.rs
-│   │   ├── perceptron.rs
-│   │   ├── multiclass_perceptron.rs
-│   ├── utils
-│   │   ├── mod.rs
-|   |   ├── activation.rs
-|   |   ├── layer.rs
-│
-├── tests
-│   ├── vector_tests.rs
-│   ├── matrix_tests.rs
-│   ├── perceptron_tests.rs
-│   ├── multiclass_perceptron_tests.rs
-│   ├── lib.rs
-│   ├── neuralnetwork_tests.rs
-
-```
-
-## Contributing
-Contributions are welcome! Please open an issue or submit a pull request if you’d like to improve RustBrain.
-
-## License
-This project is licensed under the MIT License. See `LICENSE` for details.
 
 ## Roadmap
 - [x] Implement batch learning for perceptron
 - [x] Multi-class perceptron (One-vs-All)
-- [ ] Implement Softmax Classification
 - [x] Extend to Multi-Layer Perceptron (MLP)
+- [x] Implement closed-form Linear Regression
+- [x] Implement Stochastic Gradient Descent Linear Regression
+- [x] Implement Softmax Classification
 - [ ] Add Regularization for better generalization
 
 ---

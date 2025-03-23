@@ -3,8 +3,9 @@ use std::ops::Index;
 use std::ops::IndexMut;
 use std::fmt;
 use rand::Rng;
+use std::cmp::PartialEq;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 
 
 pub struct Matrix {
@@ -54,9 +55,10 @@ impl Matrix {
 
     pub fn transpose(&self) -> Self {
         let mut transposed = Matrix::zeros(self.cols, self.row_count());
-        for i in 0..self.row_count() {
-            for j in 0..self.col_count() {
-                transposed[j][i] = self.rows[i][j];
+    
+        for (i, row) in self.rows.iter().enumerate() {
+            for (j, &value) in row.data.iter().enumerate() {
+                transposed.rows[j].data[i] = value;
             }
         }
         transposed
@@ -132,7 +134,7 @@ impl Matrix {
     }
     /// Performs LU decomposition using Doolittle’s method
     /// Returns (LU matrix, parity of row swaps)
-    fn lu_decomposition(&self) -> (Matrix, i32) {
+    pub fn lu_decomposition(&self) -> (Matrix, i32) {
         let n = self.row_count();
         let mut lu = self.clone();
         let mut parity = 1; // Tracks row swaps (affects determinant sign)
@@ -167,6 +169,23 @@ impl Matrix {
         }
 
         (lu, parity)
+    }
+
+    pub fn split_lu(&self) -> (Matrix, Matrix) {
+        let n = self.row_count();
+        let mut l = Matrix::identity(n);
+        let mut u = Matrix::zeros(n, n);
+        
+        for i in 0..n {
+            for j in 0..n {
+                if i > j {
+                    l[(i, j)] = self[(i, j)];
+                } else {
+                    u[(i, j)] = self[(i, j)];
+                }
+            }
+        }
+        (l, u)
     }
 
      /// Swaps two rows in the matrix
@@ -212,29 +231,38 @@ impl Matrix {
         }
     }
 
-    /// Computes the inverse of the matrix using LU decomposition.
-    pub fn inverse(&self) -> Option<Matrix> {
-        let n = self.row_count();
-        assert!(self.row_count() == self.cols, "Matrix must be square to compute inverse.");
-
-        let (lu, parity) = self.lu_decomposition();
-        if parity == 0 {
-            return None; // Singular matrix (no inverse)
+    /// Computes the inverse of the matrix using adj(A) / det(A)
+    pub fn inverse(&self) -> Matrix {
+        if self.row_count() != self.cols
+        {
+            panic!("Matrix must be square to compute the inverse matrix.");
         }
-
-        // Identity matrix as right-hand side
-        let identity = Matrix::identity(n);
-        let mut inverse = Matrix::zeros(n, n);
-
-        // Solve LU * X = I for each column of the identity matrix
-        for col in 0..n {
-            let b = identity.get_column(col);
-            let y = lu.forward_substitution(&b);
-            let x = lu.backward_substitution(&y);
-            inverse.set_column(col, &x);
+        let d = self.determinant();
+        if  d == 0.0{
+            panic!("Matrix inversion failed! Check for singularity.");
         }
+        let d_inv = 1.0 / d;
+        let mut inverse = self.cofactor_matrix().transpose();
+        inverse.scale(d_inv);
+        
+        // A * A^-1 = I validation with rounding, should be a 1.0 or a 0.0
+        let mut ident_check = self.gemm(&inverse);
+        for i in 0..ident_check.row_count() {
+            for j in 0..ident_check.col_count() {
+                ident_check[i][j] = ident_check[i][j].round();
+            }
+        }
+        // if ident_check != Matrix::identity(self.cols)
+        // {
+        //     panic!("Matrix inversion failed! Check for singularity.");
+        // }
+        inverse
+    }
 
-        Some(inverse)
+    /// Reverses the order of rows in the matrix.
+    pub fn reverse_rows(&self) -> Matrix {
+        let reversed_rows: Vec<Vector> = self.rows.iter().rev().cloned().collect();
+        Matrix::from_vector(reversed_rows)
     }
 
     /// Performs forward substitution to solve L * y = b
@@ -276,6 +304,8 @@ impl Matrix {
 
     /// Sets a column in the matrix from a Vector
     fn set_column(&mut self, col: usize, v: &Vector) {
+        assert_eq!(self.row_count(), v.len(), "Vector length must match matrix row count.");
+    
         for i in 0..self.row_count() {
             self[(i, col)] = v[i];
         }
@@ -398,7 +428,38 @@ impl Matrix {
         }
         let q = Matrix::new(q_data);
         let r = Matrix::new(r_data);
+        
         (q, r)
+    }
+
+    pub fn cofactor_matrix(&self) -> Matrix {
+        assert!(self.row_count() == self.col_count(), "Matrix must be square to compute the cofactor matrix.");
+        let n = self.row_count();
+        let mut cofactors = Matrix::zeros(n, n);
+
+        for i in 0..n {
+            for j in 0..n {
+                let minor = self.minor(i, j);
+                let sign = if (i + j) % 2 == 0 { 1.0 } else { -1.0 };
+                cofactors[(i, j)] = sign * minor.determinant();
+            }
+        }
+
+        cofactors
+    }
+    
+    /// Computes the minor of a matrix by removing the specified row and column.
+    fn minor(&self, row: usize, col: usize) -> Matrix {
+        let minor_data: Vec<Vec<f64>> = self.rows.iter().enumerate()
+            .filter(|&(r, _)| r != row)
+            .map(|(_, row_data)| {
+                row_data.data.iter().enumerate()
+                    .filter(|&(c, _)| c != col)
+                    .map(|(_, &val)| val)
+                    .collect()
+            })
+            .collect();
+        Matrix::new(minor_data)
     }
 }
 
@@ -440,5 +501,27 @@ impl fmt::Display for Matrix {
             writeln!(f, "[{}]", formatted_row.join(" "))?;
         }
         Ok(())
+    }
+}
+
+
+impl PartialEq for Matrix {
+    fn eq(&self, other: &Self) -> bool {
+        if self.row_count() != other.row_count() || self.col_count() != other.col_count() {
+            return false;
+        }
+        for i in 0..self.row_count() {
+            for j in 0..self.col_count() {
+                let a = self[i][j];
+                let b = other[i][j];
+                if a.abs() < f64::EPSILON && b.abs() < f64::EPSILON {
+                    continue;
+                }
+                if (a - b).abs() > f64::EPSILON {
+                    return false;
+                }
+            }
+        }
+        true
     }
 }
