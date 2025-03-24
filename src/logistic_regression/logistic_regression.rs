@@ -4,14 +4,18 @@ use rand::{prelude::SliceRandom, Rng};
 
 pub struct LogisticRegression {
     pub weights: Vector, // Model parameters (including bias)
+    pub l1_lambda: f64,  // L1 regularization strength
+    pub l2_lambda: f64,  // L2 regularization strength
 }
 
 impl LogisticRegression {
     /// Creates an uninitialized Logistic Regression model.
-    pub fn new(n_features: usize) -> Self {
+    pub fn new(n_features: usize, l1_lambda: f64, l2_lambda: f64) -> Self {
         let mut rng = rand::rng();
         Self {
             weights: Vector::new((0..=n_features).map(|_| rng.random_range(-0.01..0.01)).collect()),
+            l1_lambda,
+            l2_lambda,
         }
     }
 
@@ -31,7 +35,13 @@ impl LogisticRegression {
                 
                 let prediction = sigmoid(self.weights.dot(&x));
                 let error = targets[i] - prediction;
-                let gradient = x.scale(error * learning_rate);
+                let mut gradient = x.scale(error * learning_rate);
+
+                // Apply L1 (Lasso) and L2 (Ridge) regularization
+                for j in 1..self.weights.len() { // Skip bias term
+                    gradient[j] -= learning_rate * (self.l1_lambda * self.weights[j].signum() + 2.0 * self.l2_lambda * self.weights[j]);
+                }
+
                 self.weights = self.weights.add(&gradient);
             }
         }
