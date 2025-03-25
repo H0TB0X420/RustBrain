@@ -10,4 +10,4 @@ pub use math::{Vector, Matrix};
 pub use perceptron::{Perceptron, MultiClassPerceptron};
 pub use neuralnetwork::NeuralNetwork;
 pub use logistic_regression::{LogisticRegression, SoftmaxRegression};
-pub use svm::{HardMarginSVM, SoftMarginSVM};
+pub use svm::{HardMarginSVM, SoftMarginSVM, QPSolver};
