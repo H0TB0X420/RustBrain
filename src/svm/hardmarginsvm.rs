@@ -1,4 +1,4 @@
-use crate::math::{Vector, Matrix};
+use crate::math::Vector;
 use rand::Rng;
 
 pub struct HardMarginSVM {
@@ -11,10 +11,10 @@ pub struct HardMarginSVM {
 impl HardMarginSVM {
     /// Creates a new Hard-Margin SVM model
     pub fn new(n_features: usize, learning_rate: f64, epochs: usize) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         Self {
-            weights: Vector::new((0..n_features).map(|_| rng.gen_range(-0.01..0.01)).collect()),
-            bias: rng.gen_range(-0.01..0.01),
+            weights: Vector::new((0..n_features).map(|_| rng.random_range(-0.01..0.01)).collect()),
+            bias: rng.random_range(-0.01..0.01),
             learning_rate,
             epochs,
         }

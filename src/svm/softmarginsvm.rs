@@ -1,4 +1,4 @@
-use crate::math::{Vector, Matrix};
+use crate::math::Vector;
 use rand::Rng;
 
 pub struct SoftMarginSVM {
@@ -12,10 +12,10 @@ pub struct SoftMarginSVM {
 impl SoftMarginSVM {
     /// Creates a new Soft-Margin SVM model
     pub fn new(n_features: usize, learning_rate: f64, epochs: usize, c: f64) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         Self {
-            weights: Vector::new((0..n_features).map(|_| rng.gen_range(-0.01..0.01)).collect()),
-            bias: rng.gen_range(-0.01..0.01),
+            weights: Vector::new((0..n_features).map(|_| rng.random_range(-0.01..0.01)).collect()),
+            bias: rng.random_range(-0.01..0.01),
             learning_rate,
             epochs,
             c,

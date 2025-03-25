@@ -101,7 +101,7 @@ fn main() {
 - [x] Implement closed-form Linear Regression
 - [x] Implement Stochastic Gradient Descent Linear Regression
 - [x] Implement Softmax Classification
-- [ ] Add Regularization for better generalization
+- [x] Add Regularization for better generalization
 
 ---
 
