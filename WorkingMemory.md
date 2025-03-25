@@ -34,7 +34,7 @@
 
 
 ### **5. Support Vector Machines (SVMs)**
-- 🔲 Implement **hard-margin and soft-margin SVMs**.  
+- ✅ Implement **hard-margin and soft-margin SVMs**.  
 - 🔲 Implement **Quadratic Programming Solver** (or use an optimization technique like SMO).  
 - 🔲 Implement **Kernel SVMs with RBF, polynomial, and linear kernels**.  
 - 🔲 Update README
@@ -89,12 +89,22 @@
 ### **12. Benchmarking and Performance Analysis**  
 - 🔲 Implement benchmarking tests for **Vector and Matrix operations**.  
 - 🔲 Compare performance of **closed-form vs gradient descent regression**.  
-- 🔲 Measure training speed and efficiency for **Logistic Regression and MLPs**.  
+- 🔲 Measure training speed and efficiency for **Logistic Regression, MLPs, SVMs**.  
 - 🔲 Profile memory usage for **various models**.  
 - 🔲 Update README  
 
 ### **13. Optimization & Parallelization**  
+- 🔲 Improve any moodels not passing benchmarks. 
 - 🔲 Implement **automatic differentiation** for gradient computation.  
 - 🔲 Optimize matrix computations using **parallelization (multi-threading or SIMD)**.  
 - 🔲 Consider **GPU acceleration** with Rust libraries like `wgpu` or `cust` (CUDA bindings).  
 - 🔲 Update README  
+
+
+### **14.A Import RustBrain, Complete Real Data Applications**  
+- 🔲 Run MLP on MNIST data 
+- 🔲 Run logistic regression 
+
+### **14.B Advanced Usages for Experimental Applications**  
+- 🔲 Create a Transformer 
+- 🔲 Create a Vision Transformer
