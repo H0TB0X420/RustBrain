@@ -1,4 +1,5 @@
-use crate::math::Vector;
+use crate::math::{Vector, Matrix};
+use crate::QPSolver;
 use rand::Rng;
 
 pub struct SoftMarginSVM {
@@ -7,6 +8,7 @@ pub struct SoftMarginSVM {
     pub learning_rate: f64,
     pub epochs: usize,
     pub c: f64, // Regularization parameter
+    pub alpha: Option<Vector>,
 }
 
 impl SoftMarginSVM {
@@ -19,6 +21,7 @@ impl SoftMarginSVM {
             learning_rate,
             epochs,
             c,
+            alpha: None,
         }
     }
 
@@ -38,6 +41,34 @@ impl SoftMarginSVM {
                 }
             }
         }
+    }
+    
+    /// Train Soft-Margin SVM using Quadratic Programming (QP) Solver with SMO
+    pub fn fit_qp(&mut self, inputs: &Vec<Vector>, targets: &Vector) {
+        assert!(inputs.len() == targets.len(), "Mismatched input and target sizes!");
+        let n = inputs.len();
+        let mut q = Matrix::zeros(n, n);
+        let p = Vector::new(vec![-1.0; n]);
+        let a = Matrix::from_vector(vec![targets.clone()]);
+        let b = Vector::new(vec![0.0]);
+        let l = Vector::new(vec![0.0; n]);
+        let u = Vector::new(vec![self.c; n]);
+        
+        for i in 0..n {
+            for j in 0..n {
+                q[(i, j)] = targets[i] * targets[j] * inputs[i].dot(&inputs[j]);
+            }
+        }
+        
+        let mut qp_solver = QPSolver::new(q, p, a, b, l, u);
+        self.alpha = Some(qp_solver.solve_smo(1000, 1e-5));
+        
+        // Compute final weights and bias
+        self.weights = Vector::zeros(inputs[0].len());
+        for i in 0..n {
+            self.weights = self.weights.add(&inputs[i].scale(self.alpha.as_ref().unwrap()[i] * targets[i]));
+        }
+        self.bias = targets[0] - self.weights.dot(&inputs[0]);
     }
 
     /// Predicts the class label (-1 or 1)
