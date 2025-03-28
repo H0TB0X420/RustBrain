@@ -60,7 +60,7 @@ impl SoftMarginSVM {
             }
         }
         
-        let mut qp_solver = QPSolver::new(q, p, a, b, l, u);
+        let mut qp_solver = QPSolver::new(q, p, a, b, l, u, targets.clone());
         self.alpha = Some(qp_solver.solve_smo(1000, 1e-5));
         
         // Compute final weights and bias

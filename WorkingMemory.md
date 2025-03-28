@@ -35,7 +35,7 @@
 
 ### **5. Support Vector Machines (SVMs)**
 - ✅ Implement **hard-margin and soft-margin SVMs**.  
-- 🔲 Implement **Quadratic Programming Solver** (or use an optimization technique like SMO).  
+- ✅ Implement **Quadratic Programming Solver** (or use an optimization technique like SMO).  
 - 🔲 Implement **Kernel SVMs with RBF, polynomial, and linear kernels**.  
 - 🔲 Update README
 
