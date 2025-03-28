@@ -81,7 +81,7 @@ mod tests {
         let targets = Vector::new(vec![1.0, 1.0, 1.0, -1.0, -1.0, -1.0]);
         
         // For a nearly linear kernel, set gamma very small
-        let mut model = KernelSVM::new(10.0, 2, 10, 0.0001);
+        let mut model = KernelSVM::new(10.0, 2, 10, 0.5);
         model.fit_qp(&inputs, &targets);
         
         let mut correct = 0;
