@@ -12,7 +12,6 @@ impl Perceptron {
     pub fn new(input_size: usize) -> Self {
         Self {
             weights: Vector::random(input_size + 1), // Extra weight for bias
-            
         }
     }
 

@@ -8,3 +8,5 @@ target/
 *.pdb
 
 Cargo.lock
+
+verifier/venv/

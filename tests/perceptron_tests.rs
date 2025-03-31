@@ -1,3 +1,11 @@
+mod common;
+
+use rustbrain::Perceptron;
+use common::{dump_to_verifier, ModelParameters};
+//To do implement dump to verifier for core models. perceptron, 
+//softmax, linear reg, logistic reg, multiclass perceptron, neural network.
+
+
 #[cfg(test)]
 mod tests {
     use rustbrain::perceptron::Perceptron;
