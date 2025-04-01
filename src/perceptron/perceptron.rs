@@ -4,7 +4,7 @@
 use crate::math::Vector;
 
 pub struct Perceptron {
-    weights: Vector, // Using our custom Vector struct
+    pub weights: Vector, // Using our custom Vector struct
 }
 
 impl Perceptron {

@@ -167,4 +167,10 @@ impl<'a> IntoIterator for &'a mut Vector {
     }
 }
 
+// impl From<Vector> for Vec<f64> {
+//     fn from(vec: Vector) -> Self {
+//         vec.data
+//     }
+// }
+
 

@@ -1,3 +1,6 @@
+#[macro_use]
+mod common;
+
 #[cfg(test)]
 mod tests {
     use rand::Rng;
@@ -34,6 +37,14 @@ mod tests {
         assert_eq!(model.weights.data.len(), 2);
         assert_relative_eq!(model.weights.data[0], 1.0, epsilon = 1e-5);
         assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 1e-5);
+
+        export_verifier_output!(
+            predictions = x_data.iter().map(|x| model.predict(x)).collect(),
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "test_fit_simple_case.json"
+        );
+        
     }
 
     #[test]
@@ -166,6 +177,13 @@ mod tests {
                 ew, w
             );
         }
+
+        export_verifier_output!(
+            predictions = vec![prediction],
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "test_linear_regression_complex.json"
+        );
     }
 
 }
