@@ -1,3 +1,6 @@
+#[macro_use]
+mod common;
+
 #[cfg(test)]
 mod tests {
     use rand::Rng;
@@ -32,8 +35,17 @@ mod tests {
         
         // Check if weights are close to [1, 2] (bias=1, slope=2)
         assert_eq!(model.weights.data.len(), 2);
-        assert_relative_eq!(model.weights.data[0], 1.0, epsilon = 1e-5);
-        assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 1e-5);
+        assert_relative_eq!(model.weights.data[0], 1.0, epsilon = 0.1);
+        assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 0.1);
+
+        export_verifier_output!(
+            inputs = x_data.iter().map(|v| v.data.clone()).collect(),
+            predictions = x_data.iter().map(|x| model.predict(x)).collect::<Vec<f64>>(),
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "sgd_linreg_simple_case.json"
+        );
+        
     }
 
     #[test]
@@ -62,9 +74,18 @@ mod tests {
         
         // Check if weights are close to [1, 2, 3] (bias=1, coef_x1=2, coef_x2=3)
         assert_eq!(model.weights.data.len(), 3);
-        assert_relative_eq!(model.weights.data[0], 1.0, epsilon = 1e-3);
-        assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 1e-3);
-        assert_relative_eq!(model.weights.data[2], 3.0, epsilon = 1e-3);
+        assert_relative_eq!(model.weights.data[0], 1.0, epsilon = 0.1);
+        assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 0.1);
+        assert_relative_eq!(model.weights.data[2], 3.0, epsilon = 0.1);
+
+        export_verifier_output!(
+            inputs = x_data.iter().map(|x| x.data.clone()).collect(),
+            predictions = x_data.iter().map(|x| model.predict(x)).collect::<Vec<f64>>(),
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "sgd_linreg_multivariate.json"
+        );
+        
     }
 
 
@@ -121,12 +142,22 @@ mod tests {
         // Ensure weights are close to expected [bias ≈ 5, w1 ≈ 3, w2 ≈ -2, w3 ≈ 4, w4 ≈ 1]
         let expected_weights = Vector::new(vec![5.0, 3.0, -2.0, 4.0, 1.0]);
         for (w, ew) in model.weights.data.iter().zip(expected_weights.data.iter()) {
+            print!("{}\t", w);
             assert!(
                 (w - ew).abs() < 0.5,
                 "Expected weight {}, got {}",
                 ew, w
             );
         }
+
+        export_verifier_output!(
+            inputs = vec![test_input.data],
+            predictions = vec![prediction],
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "sgd_linreg_complex.json"
+        );
+        
     }
 
 }

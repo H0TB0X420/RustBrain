@@ -43,6 +43,7 @@ mod tests {
                                 .collect();
 
         export_verifier_output!(
+            inputs = inputs.iter().map(|x| x.data.clone()).collect(),
             predictions = &predictions,
             weights = weights,
             biases = vec![],

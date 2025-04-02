@@ -1,3 +1,6 @@
+#[macro_use]
+mod common;
+
 #[cfg(test)]
 mod tests {
     use rustbrain::math::Vector;
@@ -26,11 +29,12 @@ mod tests {
         // Here we use a learning rate of 0.5 and 10,000 epochs.
         nn.train(&inputs, &targets, 0.5, 10_000);
         
-        // After training, test predictions on the XOR inputs.
+        let mut predictions = Vec::new();
+
         for (input, target) in inputs.iter().zip(targets.iter()) {
             let output = nn.predict(input);
             println!("Input: {:?} -> Output: {:?}", input.data, output.data);
-            // We expect the output to be close to the target (within a tolerance)
+
             assert!(
                 (output.data[0] - target.data[0]).abs() < 0.2,
                 "For input {:?}, expected output approx {:?} but got {:?}",
@@ -38,6 +42,30 @@ mod tests {
                 target.data,
                 output.data
             );
+
+            predictions.push(output.data[0]);
         }
+
+        let weights: Vec<Vec<f64>> = nn
+            .layers
+            .iter()
+            .flat_map(|layer| {
+                layer.weights.rows.iter().map(|row| row.data.clone())
+            })
+            .collect();
+
+        // let biases: Vec<f64> = nn
+        //     .layers
+        //     .iter()
+        //     .flat_map(|layer| layer.biases.data.clone())
+        //     .collect();
+
+        export_verifier_output!(
+            inputs = inputs.iter().map(|x| x.data.clone()).collect(),
+            predictions = predictions,
+            weights = weights,
+            biases = vec![],
+            file = "xor_neural_network.json"
+        );
     }
 }

@@ -1,6 +1,9 @@
-
+#[macro_use]
+mod common;
 
 mod tests {
+use std::vec;
+
 use rustbrain::Vector;
 use rustbrain::{LogisticRegression, SoftmaxRegression};
 
@@ -19,6 +22,16 @@ use rustbrain::{LogisticRegression, SoftmaxRegression};
 
         assert_eq!(model.predict(&Vector::new(vec![0.0, 0.0])), 0);
         assert_eq!(model.predict(&Vector::new(vec![1.0, 1.0])), 1);
+
+        let predictions: Vec<f64> = vec![Vector::new(vec![0.0, 0.0]), Vector::new(vec![1.0, 1.0])].iter().map(|x| model.predict(x) as f64).collect();
+
+        export_verifier_output!(
+            inputs = inputs.iter().map(|v| v.data.clone()).collect(),
+            predictions = predictions,
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "logreg_binary.json"
+        );
     }
 
     #[test]
@@ -36,6 +49,17 @@ use rustbrain::{LogisticRegression, SoftmaxRegression};
 
         assert_eq!(model.predict(&Vector::new(vec![0.0, 0.0])), 0);
         assert_eq!(model.predict(&Vector::new(vec![1.0, 1.0])), 1);
+
+        let predictions: Vec<f64> = inputs.iter().map(|x| model.predict(x) as f64).collect();
+
+        export_verifier_output!(
+            inputs = inputs.iter().map(|v| v.data.clone()).collect(),
+            predictions = predictions,
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "logreg_l1.json"
+        );
+
     }
 
     #[test]
@@ -53,6 +77,17 @@ use rustbrain::{LogisticRegression, SoftmaxRegression};
 
         assert_eq!(model.predict(&Vector::new(vec![0.0, 0.0])), 0);
         assert_eq!(model.predict(&Vector::new(vec![1.0, 1.0])), 1);
+
+        let predictions: Vec<f64> = inputs.iter().map(|x| model.predict(x) as f64).collect();
+
+        export_verifier_output!(
+            inputs = inputs.iter().map(|v| v.data.clone()).collect(),
+            predictions = predictions,
+            weights = vec![model.weights.data.clone()],
+            biases = vec![],
+            file = "logreg_l2.json"
+        );
+
     }
 
     #[test]
@@ -71,5 +106,23 @@ use rustbrain::{LogisticRegression, SoftmaxRegression};
         assert_eq!(model.predict(&Vector::new(vec![1.0, 0.0])), 0);
         assert_eq!(model.predict(&Vector::new(vec![0.0, 1.0])), 1);
         assert_eq!(model.predict(&Vector::new(vec![1.0, 1.0])), 2);
+
+        let predictions: Vec<f64> = inputs.iter().map(|x| model.predict(x) as f64).collect();
+
+        let weights: Vec<Vec<f64>> = model
+            .weights
+            .rows
+            .iter()
+            .map(|row| row.data.clone())
+            .collect();
+
+        export_verifier_output!(
+            inputs = inputs.iter().map(|v| v.data.clone()).collect(),
+            predictions = predictions,
+            weights = weights,
+            biases = vec![],
+            file = "softmax_multiclass.json"
+        );
+
     }
 }

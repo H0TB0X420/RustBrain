@@ -39,6 +39,7 @@ mod tests {
         assert_relative_eq!(model.weights.data[1], 2.0, epsilon = 1e-5);
 
         export_verifier_output!(
+            inputs = x_data.iter().map(|v| v.data.clone()).collect(),
             predictions = x_data.iter().map(|x| model.predict(x)).collect(),
             weights = vec![model.weights.data.clone()],
             biases = vec![],
@@ -179,6 +180,7 @@ mod tests {
         }
 
         export_verifier_output!(
+            inputs = vec![test_input.data],
             predictions = vec![prediction],
             weights = vec![model.weights.data.clone()],
             biases = vec![],

@@ -12,17 +12,20 @@ pub struct ModelParameters {
 
 #[derive(Serialize)]
 struct RustModelOutput<'a> {
+    inputs: &'a [Vec<f64>],
     predictions: &'a [f64],
     parameters: ModelParameters,
 }
 
-/// Call this from test code to write out predictions + params
+/// Call this from test code to write out predictions + params + inputs
 pub fn dump_to_verifier(
+    inputs: &Vec<Vec<f64>>,
     predictions: &Vec<f64>,
     parameters: ModelParameters,
     filename: &str,  // e.g., "perceptron.json"
 ) {
     let output = RustModelOutput {
+        inputs,
         predictions,
         parameters,
     };
@@ -38,12 +41,14 @@ pub fn dump_to_verifier(
 #[macro_export]
 macro_rules! export_verifier_output {
     (
+        inputs = $inputs:expr,
         predictions = $predictions:expr,
         weights = $weights:expr,
         biases = $biases:expr,
         file = $filename:expr
     ) => {
         $crate::common::dump_to_verifier(
+            &$inputs,
             &$predictions,
             $crate::common::ModelParameters {
                 weights: $weights,
@@ -52,4 +57,23 @@ macro_rules! export_verifier_output {
             $filename,
         );
     };
+}
+
+#[macro_export]
+macro_rules! dump_json_data {
+    (
+        data = $data:expr,
+        file = $filename:expr
+    ) => {{
+        use std::fs::File;
+        use std::io::Write;
+        use std::path::Path;
+        use serde_json;
+
+        let path = std::path::Path::new("verifier/rust_outputs").join($filename);
+        let json = serde_json::to_string_pretty(&$data).expect("Failed to serialize data");
+
+        let mut file = File::create(&path).expect("Failed to create file");
+        file.write_all(json.as_bytes()).expect("Failed to write JSON data");
+    }};
 }

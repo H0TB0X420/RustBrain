@@ -18,8 +18,9 @@ mod tests {
         let p = Perceptron::new(3);
         let input = Vector::new(vec![1.0, -2.0, 0.5]);
         let prediction = p.predict(&input);
-        let weights: Vec<Vec<f64>> = p.weights.iter().map(|v| p.weights.data.clone()).collect();
+        let weights = vec![p.weights.data.clone()];
         export_verifier_output!(
+            inputs = vec![input.data],
             predictions = vec![prediction.into()],
             weights = weights,
             biases = vec![],
@@ -37,8 +38,9 @@ mod tests {
 
         let new_input = Vector::new(vec![1.0, 1.0, 1.0]);
         let prediction = p.predict(&new_input);
-        let weights: Vec<Vec<f64>> = p.weights.iter().map(|v| p.weights.data.clone()).collect();
+        let weights = vec![p.weights.data.clone()];
         export_verifier_output!(
+            inputs = inputs.iter().map(|x| x.data.clone()).collect(),
             predictions = vec![prediction.into()],
             weights = weights,
             biases = vec![],

@@ -30,6 +30,7 @@ mod tests {
         let predicted_class = classifier.predict(&input);
 
         export_verifier_output!(
+            inputs = vec![input.data],
             predictions = vec![predicted_class as f64],
             weights = classifier.weights.rows.iter().map(|v| v.data.clone()).collect(),
             biases = vec![],
@@ -59,6 +60,7 @@ mod tests {
         }
 
         export_verifier_output!(
+            inputs = inputs.iter().map(|x| x.data.clone()).collect(),
             predictions = predictions,
             weights = classifier.weights.rows.iter().map(|v| v.data.clone()).collect(),
             biases = vec![],
