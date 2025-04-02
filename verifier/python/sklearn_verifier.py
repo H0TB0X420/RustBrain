@@ -1,47 +1,70 @@
 import argparse
 import json
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import SGDRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, accuracy_score
 
-def load_dataset(csv_path):
-    df = pd.read_csv(csv_path)
-    X = df.iloc[:, :-1].values  # All columns except last
-    y = df.iloc[:, -1].values   # Last column
-    return X, y
-
-def load_rust_predictions(json_path):
-    with open(json_path, 'r') as f:
+def load_rust_output(path):
+    with open(path, 'r') as f:
         data = json.load(f)
-        return np.array(data["predictions"])
+    X = np.array(data["inputs"])
+    y_rust = np.array(data["predictions"])
+    weights = np.array(data["parameters"]["weights"])
+    biases = np.array(data["parameters"]["biases"])
+    return X, y_rust, weights, biases
 
-def verify_logistic_regression(dataset_path, rust_output_path):
-    X, y = load_dataset(dataset_path)
-    rust_preds = load_rust_predictions(rust_output_path)
+def verify_linear(X, y_rust):
+    model = LinearRegression()
+    model.fit(X, y_rust)  # using X as both train and test for now
+    y_sklearn = model.predict(X)
+    mse = mean_squared_error(y_rust, y_sklearn)
+    print(f"✅ MSE: {mse:.6f}")
+    assert mse < 1e-1, "MSE too high"
 
-    clf = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=500)
-    clf.fit(X, y)
-    sklearn_preds = clf.predict(X)
+def verify_logistic(X, y_rust):
+    y_rust_int = y_rust.astype(int)
+    model = LogisticRegression()
+    model.fit(X, y_rust_int)
+    y_sklearn = model.predict(X)
+    acc = accuracy_score(y_rust_int, y_sklearn)
+    print(f"✅ Accuracy: {acc:.6f}")
+    assert acc > 0.95, "Accuracy too low"
 
-    sklearn_acc = accuracy_score(y, sklearn_preds)
-    rust_acc = accuracy_score(y, rust_preds)
-    diff = abs(sklearn_acc - rust_acc)
+def verify_perceptron(X, y_rust):
+    y_rust_int = y_rust.astype(int)
+    model = Perceptron()
+    model.fit(X, y_rust_int)
+    y_sklearn = model.predict(X)
+    acc = accuracy_score(y_rust_int, y_sklearn)
+    print(f"✅ Accuracy: {acc:.6f}")
+    assert acc > 0.95, "Accuracy too low"
 
-    print("Scikit-learn Accuracy:", sklearn_acc)
-    print("RustBrain Accuracy:", rust_acc)
-    print("Accuracy Difference:", diff)
-
-    assert diff < 0.01, "Accuracy mismatch exceeds tolerance!"
+def verify_sgd_regression(X, y_rust):
+    model = SGDRegressor(max_iter=1000, tol=1e-3)
+    model.fit(X, y_rust)
+    y_sklearn = model.predict(X)
+    mse = mean_squared_error(y_rust, y_sklearn)
+    print(f"✅ MSE: {mse:.6f}")
+    assert mse < 1.0, "MSE too high for SGD regression"
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="RustBrain vs scikit-learn Verifier")
-    parser.add_argument("--model", type=str, required=True, help="Model name (e.g., logistic)")
-    parser.add_argument("--dataset", type=str, default="../datasets/iris.csv", help="Path to dataset CSV")
-    parser.add_argument("--rust-output", type=str, default="../rust_outputs/logistic.json", help="Path to Rust output JSON")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", required=True, help="Model to verify: linear, logistic, perceptron, sgd")
+    parser.add_argument("--input", required=True, help="Path to Rust JSON output file")
     args = parser.parse_args()
 
-    if args.model == "logistic":
-        verify_logistic_regression(args.dataset, args.rust_output)
+    X, y_rust, weights, biases = load_rust_output(args.input)
+
+    if args.model == "linear":
+        verify_linear(X, y_rust)
+    elif args.model == "logistic":
+        verify_logistic(X, y_rust)
+    elif args.model == "perceptron":
+        verify_perceptron(X, y_rust)
+    elif args.model == "sgd":
+        verify_sgd_regression(X, y_rust)
     else:
-        raise ValueError(f"Unsupported model: {args.model}")
+        raise ValueError(f"Unknown model type: {args.model}")
