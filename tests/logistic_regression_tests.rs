@@ -23,10 +23,11 @@ use rustbrain::{LogisticRegression, SoftmaxRegression};
         assert_eq!(model.predict(&Vector::new(vec![0.0, 0.0])), 0);
         assert_eq!(model.predict(&Vector::new(vec![1.0, 1.0])), 1);
 
-        let predictions: Vec<f64> = vec![Vector::new(vec![0.0, 0.0]), Vector::new(vec![1.0, 1.0])].iter().map(|x| model.predict(x) as f64).collect();
+        let test_inputs = vec![vec![0.0, 0.0], vec![1.0, 1.0]];
+        let predictions: Vec<f64> = test_inputs.iter().map(|x| model.predict(&Vector::new(x.to_vec())) as f64).collect();
 
         export_verifier_output!(
-            inputs = inputs.iter().map(|v| v.data.clone()).collect(),
+            inputs = test_inputs,
             predictions = predictions,
             weights = vec![model.weights.data.clone()],
             biases = vec![],
