@@ -32,6 +32,11 @@
 - ✅ Implement **L1 and L2 regularization** (Lasso & Ridge Regression).  
 - 🔲 Update README  
 
+### **4.5. Verify Modules**
+- ✅ Implement **Verification scripts in Python**.  
+- 🔲 Write **Rust tests output data needed for sklearn**
+- 🔲 Implement **All Verification Tests Run Successfully**. 
+- 🔲 Pass **All core module verification tests**
 
 ### **5. Support Vector Machines (SVMs)**
 - ✅ Implement **hard-margin and soft-margin SVMs**.  
