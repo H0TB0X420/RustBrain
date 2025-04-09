@@ -15,90 +15,105 @@ impl QPSolver {
         Self { q, p, a, b, l, u, y }
     }
 
-    pub fn solve_smo(&mut self, max_iters: usize, tolerance: f64) -> Vector {
-        let mut alpha = Vector::new(vec![0.0; self.p.len()]);
-        let mut b = 0.0;
-        let mut prev_alpha = alpha.clone();
+    pub fn solve(&mut self, max_iters: usize, tolerance: f64) -> Vector {
+        let l = self.l.len();
+        let mut alpha = Vector::zeros(l);
+        let mut grad = self.p.clone(); // Gradient of the objective function
+        let active_set: Vec<usize> = (0..l).collect();
 
         for iter in 0..max_iters {
-            let mut num_changed = 0;
-            for i in 0..alpha.len() {
-                let f_i = self.q[i].dot(&alpha);
-                let f_x_i = if self.y[i] != 0.0 { f_i / self.y[i] } else { 0.0 };
-                let y_i = self.y[i];
-                let e_i = f_x_i - y_i;
+            let mut i = usize::MAX;
+            let mut j = usize::MAX;
+            let mut g_max = f64::NEG_INFINITY;
+            let mut g_min = f64::INFINITY;
 
-                let violates_kkt =
-                    (y_i * f_x_i < 1.0 && alpha[i] < self.u[i]) ||
-                    (y_i * f_x_i > 1.0 && alpha[i] > self.l[i]);
-
-                if violates_kkt {
-                    let mut max_diff = 0.0;
-                    let mut selected_j = None;
-                    for j in 0..alpha.len() {
-                        if j == i { continue; }
-                        let f_j = self.q[j].dot(&alpha);
-                        let f_x_j = if self.y[j] != 0.0 { f_j / self.y[j] } else { 0.0 };
-                        let e_j = f_x_j - self.y[j];
-                        let diff = (e_i - e_j).abs();
-                        if diff > max_diff {
-                            max_diff = diff;
-                            selected_j = Some(j);
-                        }
+            for &t in &active_set {
+                let y_t = self.y[t];
+                let g = y_t * grad[t];
+                if y_t == 1.0 && alpha[t] < self.u[t] {
+                    if -g >= g_max {
+                        g_max = -g;
+                        i = t;
                     }
-                    let j = if let Some(j_val) = selected_j { j_val } else { continue; };
-
-                    let f_j = self.q[j].dot(&alpha);
-                    let f_x_j = if self.y[j] != 0.0 { f_j / self.y[j] } else { 0.0 };
-                    let e_j = f_x_j - self.y[j];
-
-                    let alpha_i_old = alpha[i];
-                    let alpha_j_old = alpha[j];
-
-                    let eta = 2.0 * self.q[(i, j)] - self.q[(i, i)] - self.q[(j, j)];
-                    if eta >= 0.0 {
-                        continue;
+                } else if y_t == -1.0 && alpha[t] > self.l[t] {
+                    if g >= g_max {
+                        g_max = g;
+                        i = t;
                     }
-
-                    alpha[j] -= (e_i - e_j) / eta;
-                    alpha[j] = alpha[j].max(self.l[j]).min(self.u[j]);
-
-                    alpha[i] += self.q[(i, j)] * (alpha_j_old - alpha[j]);
-                    alpha[i] = alpha[i].max(self.l[i]).min(self.u[i]);
-
-                    let b1 = b - e_i
-                        - self.q[(i, i)] * (alpha[i] - alpha_i_old)
-                        - self.q[(i, j)] * (alpha[j] - alpha_j_old);
-                    let b2 = b - e_j
-                        - self.q[(j, i)] * (alpha[i] - alpha_i_old)
-                        - self.q[(j, j)] * (alpha[j] - alpha_j_old);
-
-                    if alpha[i] > self.l[i] && alpha[i] < self.u[i] {
-                        b = b1;
-                    } else if alpha[j] > self.l[j] && alpha[j] < self.u[j] {
-                        b = b2;
-                    } else {
-                        b = (b1 + b2) / 2.0;
-                    }
-
-                    num_changed += 1;
                 }
             }
 
-            let diff = alpha.add(&prev_alpha.scale(-1.0)).norm();
-            let obj = 0.5 * alpha.dot(&self.q.gemv(&alpha)) - alpha.data.iter().sum::<f64>();
-            println!("Iteration {}: Objective = {}, Change = {}", iter, obj, diff);
+            for &t in &active_set {
+                let y_t = self.y[t];
+                let g = y_t * grad[t];
+                if y_t == 1.0 && alpha[t] > self.l[t] {
+                    if g <= g_min {
+                        g_min = g;
+                        j = t;
+                    }
+                } else if y_t == -1.0 && alpha[t] < self.u[t] {
+                    if -g <= g_min {
+                        g_min = -g;
+                        j = t;
+                    }
+                }
+            }
 
-            if diff < tolerance {
-                println!("Convergence reached at iteration {}.", iter);
+            if g_max - g_min < tolerance {
                 break;
             }
-            prev_alpha = alpha.clone();
 
-            if num_changed == 0 {
-                break;
+            let q_i = &self.q[i];
+            let q_j = &self.q[j];
+            let c_i = self.u[i];
+            let c_j = self.u[j];
+
+            let yi = self.y[i];
+            let yj = self.y[j];
+
+            let s = yi * yj;
+            let l_val;
+            let h_val;
+            if yi != yj {
+                l_val = (alpha[j] - alpha[i]).max(0.0);
+                h_val = (c_j - c_i + alpha[j] - alpha[i]).min(c_j).min(c_i);
+            } else {
+                l_val = (alpha[j] + alpha[i] - c_i).max(0.0);
+                h_val = (c_j + alpha[j] + alpha[i]).min(c_j);
             }
+
+            if (l_val - h_val).abs() < 1e-12 {
+                continue;
+            }
+
+            let eta = self.q[(i, i)] + self.q[(j, j)] - 2.0 * self.q[(i, j)];
+            if eta <= 0.0 {
+                continue;
+            }
+
+            let delta = (grad[i] - grad[j]) / eta;
+            let mut a_i = alpha[i] + yi * delta;
+            let mut a_j = alpha[j] - yj * delta;
+
+            if a_i > h_val {
+                a_i = h_val;
+            } else if a_i < l_val {
+                a_i = l_val;
+            }
+
+            a_j = alpha[j] + yj * (alpha[i] - a_i);
+            alpha[i] = a_i;
+            alpha[j] = a_j;
+
+            for k in 0..l {
+                grad[k] += (alpha[i] - a_i) * q_i[k] + (alpha[j] - a_j) * q_j[k];
+            }
+
+            println!("Iteration {}: Objective = {:.6}, Alpha Change = {:.6}", iter,
+                0.5 * alpha.dot(&self.q.gemv(&alpha)) - alpha.data.iter().sum::<f64>(),
+                (alpha[i] - a_i).abs() + (alpha[j] - a_j).abs());
         }
+
         alpha
     }
 }

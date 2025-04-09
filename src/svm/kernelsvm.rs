@@ -58,10 +58,10 @@ impl KernelSVM {
             println!("Q[0,0]: {}", q[(0,0)]);
             println!("Q[0,1]: {}", q[(0,1)]);
             let mut qp_solver = QPSolver::new(q, p, a, b, l, u, targets.clone());
-            self.alpha = qp_solver.solve_smo(1000, 1e-5);
+            self.alpha = qp_solver.solve(1000, 1e-5);
             
             // Identify support vectors (where α > threshold) and store them along with corresponding targets and alphas
-            let threshold = 1e-5;
+            let threshold = 1e-3;
             let mut sup_vecs = Vec::new();
             let mut sup_targs = Vec::new();
             let mut sup_alphas = Vec::new();

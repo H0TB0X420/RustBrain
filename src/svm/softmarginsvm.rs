@@ -8,7 +8,7 @@ pub struct SoftMarginSVM {
     pub learning_rate: f64,
     pub epochs: usize,
     pub c: f64, // Regularization parameter
-    pub alpha: Option<Vector>,
+    pub alpha: Vector,
 }
 
 impl SoftMarginSVM {
@@ -21,7 +21,7 @@ impl SoftMarginSVM {
             learning_rate,
             epochs,
             c,
-            alpha: None,
+            alpha: Vector::zeros(1),
         }
     }
 
@@ -61,12 +61,12 @@ impl SoftMarginSVM {
         }
         
         let mut qp_solver = QPSolver::new(q, p, a, b, l, u, targets.clone());
-        self.alpha = Some(qp_solver.solve_smo(1000, 1e-5));
+        self.alpha = qp_solver.solve(1000, 1e-5);
         
         // Compute final weights and bias
         self.weights = Vector::zeros(inputs[0].len());
         for i in 0..n {
-            self.weights = self.weights.add(&inputs[i].scale(self.alpha.as_ref().unwrap()[i] * targets[i]));
+            self.weights = self.weights.add(&inputs[i].scale(self.alpha[i] * targets[i]));
         }
         self.bias = targets[0] - self.weights.dot(&inputs[0]);
     }

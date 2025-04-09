@@ -119,12 +119,13 @@ mod tests {
             targets_vec.push(-1.0);
         }
         let targets = Vector::new(targets_vec);      // Use an RBF kernel via RFF with appropriate gamma for this data
-        let mut model = KernelSVM::new(10.0, 2, 100, 0.5);
+        let mut model = KernelSVM::new(10.0, 2, 1000, 0.5);
         model.fit_qp(&inputs, &targets);
         
         let mut correct = 0;
         for (input, &target) in inputs.iter().zip(targets.data.iter()) {
             let prediction = model.predict(input);
+            println!("{} \t {}", prediction, target);
             if prediction as f64 == target {
                 correct += 1;
             }
